@@ -2,23 +2,20 @@ version: '3.9'
 
 services:
   frontend:
-    build: ./frontend
+    image: ghcr.io/canove/whaticket-frontend:latest
     ports:
-      - "3010:3000" # redireciona para outra porta local
-    depends_on:
-      - backend
+      - "3010:3000"       # Como você já tem algo na 3000, mapeei para 3010
     environment:
       - NODE_ENV=production
       - REACT_APP_BACKEND_URL=https://apiwhats.digitnet.com.br
     restart: unless-stopped
+    depends_on:
+      - backend
 
   backend:
-    build: ./backend
+    image: ghcr.io/canove/whaticket:latest
     ports:
       - "8080:8080"
-    depends_on:
-      - mysql
-      - redis
     environment:
       - NODE_ENV=production
       - DB_HOST=mysql
@@ -30,11 +27,12 @@ services:
       - REDIS_PORT=6379
       - FRONTEND_URL=https://whats.digitnet.com.br
     restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
 
   mysql:
     image: mysql:5.7
-    ports:
-      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=Maria182512
       - MYSQL_DATABASE=whaticket
@@ -46,8 +44,6 @@ services:
 
   redis:
     image: redis:alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
