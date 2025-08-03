@@ -1,57 +1,57 @@
-version: "3.8"
+version: '3.9'
 
 services:
-  backend:
-    image: node:18
-    container_name: whaticket-backend
-    working_dir: /app
-    volumes:
-      - ./backend:/app
+  frontend:
+    build: ./frontend
     ports:
-      - "4000:4000"
-    command: sh -c "npm install && npm run build && npm run start"
+      - "3010:3000" # redireciona para outra porta local
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_BACKEND_URL=https://apiwhats.digitnet.com.br
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
     depends_on:
       - mysql
       - redis
     environment:
       - NODE_ENV=production
       - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASS=whaticketpassword
-      - DB_NAME=whaticketinstancia
-      - JWT_SECRET=mysecretjwt
-      - BACKEND_URL=https://api.seusite.com.br
-      - FRONTEND_URL=https://painel.seusite.com.br
-
-  frontend:
-    image: node:18
-    container_name: whaticket-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    ports:
-      - "3000:3000"
-    command: sh -c "npm install && npm run build && npm run start"
-    environment:
-      - REACT_APP_BACKEND_URL=https://api.seusite.com.br
+      - DB_USER=whaticket
+      - DB_PASS=Maria182512
+      - DB_NAME=whaticket
+      - JWT_SECRET=chave_super_secreta_qualquer
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FRONTEND_URL=https://whats.digitnet.com.br
+    restart: unless-stopped
 
   mysql:
     image: mysql:5.7
-    container_name: whaticket-mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: whaticketpassword
-      MYSQL_DATABASE: whaticketinstancia
-    volumes:
-      - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=Maria182512
+      - MYSQL_DATABASE=whaticket
+      - MYSQL_USER=whaticket
+      - MYSQL_PASSWORD=Maria182512
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
-    container_name: whaticket-redis
     ports:
-      - "5000:6379"
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
   mysql_data:
+  redis_data:
